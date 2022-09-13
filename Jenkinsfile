@@ -12,7 +12,7 @@ pipeline {
         stage('docker build') {
             steps {
                 sh '''
-                docker image build -t customimage .
+                docker image build -t aju2372/ansible:2 .
                 '''
             }
         }
