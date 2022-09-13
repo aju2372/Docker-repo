@@ -4,8 +4,8 @@ pipeline {
         stage('git clone') {
             steps {
                 sh '''
-                echo "hello Aju"
-                echo "How are you"
+                pwd
+                ls -l
                 '''
             }
         }
