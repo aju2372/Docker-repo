@@ -9,11 +9,10 @@ pipeline {
                 '''
             }
         }
-        stage('build') {
+        stage('docker build') {
             steps {
                 sh '''
-                echo "hello Aju"
-                echo "How are you"
+                docker image build -t customimage .
                 '''
             }
         }
