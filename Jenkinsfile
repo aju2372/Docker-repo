@@ -15,12 +15,21 @@ pipeline {
                 docker image build -t aju2372/ansible:2 .
                 '''
             }
+             
+              }
+        stage('test image') {
+            steps {
+                sh '''
+                'echo "test passed"'
+                '''
+            }
         }
         stage('push') {
             steps {
                 sh '''
-                echo "hello Aju"
-                echo "How are you"
+                docker.withRegistry('https://hub.docker.com', 'credentials-id') {
+                app.push("${env.BUILD_NUMBER}")
+                app.push("latest")
                 '''
             }
         }
