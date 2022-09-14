@@ -1,5 +1,10 @@
 pipeline {
      agent { label "my-agent" } 
+     
+     environment {
+          DOCKERHUB_CREDENTIALS=credentials('d942f0a9-5258-4d46-ba41-725d8e3ac292')
+     }
+     
     stages {
         stage('git clone') {
             steps {
@@ -12,26 +17,32 @@ pipeline {
         stage('docker build') {
             steps {
                 sh '''
-                docker image build -t aju2372/ansible:2 .
+                docker image build -t aju2372/ansible:3 .
                 '''
             }
              
               }
-        stage('test image') {
+        stage('Login') {
             steps {
                 sh '''
-                'echo "test passed"'
+                echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
                 '''
             }
         }
         stage('push') {
             steps {
                 sh '''
-                docker.withRegistry('https://hub.docker.com', 'credentials-id') {
-                app.push("${env.BUILD_NUMBER}")
-                app.push("latest")
+                docker push aju2372/ansible:3
                 '''
             }
+        }
+    }
+
+    post {
+        always {
+            sh '''
+            docker logout
+            '''
         }
     }
 }
