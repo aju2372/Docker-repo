@@ -1,41 +1,61 @@
 pipeline {
      agent { label "my-agent" } 
-     
-     environment {
-          DOCKERHUB_CREDENTIALS=credentials('d942f0a9-5258-4d46-ba41-725d8e3ac292')
-     }
-     
+
     stages {
-        stage('git clone') {
-            steps {
-                sh '''
-                pwd
-                ls -l
-                '''
+        stage('docker build dev') {
+            when {
+                expression { BRANCH_NAME != "main" }
             }
-        }
-        stage('docker build') {
             steps {
                 sh '''
-                docker image build -t aju2372/ansible:3 .
+                ls -l
+                pwd
+                docker build -t aju2372/ansibledev:${BUILD_NUMBER} .
                 '''
             }
              
-              }
+            }
         stage('Login') {
             steps {
-                sh '''
-                echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
-                '''
+                withCredentials([usernamePassword(credentialsId: 'docker-user-pass', passwordVariable: 'password', usernameVariable: 'username')]) {
+                    sh '''
+                    docker login --username=$username --password=$password
+                    '''
+                }
             }
         }
-        stage('push') {
+        stage('push to dev repo') {
+            when {
+                expression { BRANCH_NAME != "main" }
+            }
             steps {
                 sh '''
-                docker push aju2372/ansible:3
+                docker push aju2372/ansibledev:${BUILD_NUMBER}
                 '''
             }
         }
+        stage('docker build prod') {
+            when {
+                expression { BRANCH_NAME == "main" }
+            }
+            steps {
+                sh '''
+                docker build -t aju2372/ansible:${BUILD_NUMBER} .
+                '''
+            }
+             
+            }
+        stage('push to prod repo') {
+            when {
+                expression { BRANCH_NAME == "main" }
+            }
+            steps {
+                sh '''
+                docker push aju2372/ansible:${BUILD_NUMBER}
+                '''
+            }
+        }
+        
     }
 
     post {
