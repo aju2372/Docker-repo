@@ -1,0 +1,56 @@
+---
+  - name: security group rule descriptions
+    ec2_group:
+      name: "{{ name }}-prod-sg"
+      description: allows http access
+      vpc_id: "{{ vpc }}"
+      region:  "{{ region }}"
+      rules:
+        - proto: tcp
+          ports:
+          - 8080
+          cidr_ip: 0.0.0.0/0
+          rule_desc: allow all on port 8080
+    register: prod_sg
+
+  - debug:
+      msg: "{{ prod_sg.group_id }}"
+
+  - name: creating ec2 machine
+    amazon.aws.ec2:
+       key_name: "{{ key_name }}"
+       instance_type: t2.micro
+       group_id: "{{ prod_sg.group_id }}"
+       instance_tags:
+           Name: "{{ name }}-jenkins-ec2"
+       image: ami-06489866022e12a14
+       region: "{{ region }}"
+       count_tag:
+           Name: "{{ name }}-jenkins-ec2"
+       exact_count: 1
+       vpc_subnet_id: "{{ subnet }}"
+       assign_public_ip: yes
+       user_data: |
+               #!/bin/bash
+               sudo yum update
+               sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+               sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+               sudo amazon-linux-extras install java-openjdk11 -y
+               sudo yum upgrade
+               sudo yum install jenkins -y
+               sudo systemctl enable jenkins
+               sudo systemctl start jenkins
+    register: ec2_info
+
+  - debug:
+      msg: "{{ ec2_info }}"
+
+
+  - name: Add new zone as an A record and wait until the changes have been replicated
+    community.aws.route53:
+     state: present
+     zone: azmatfirdous.ml
+     record: test.azmatfirdous.ml
+     type: A
+     ttl: 60
+     value:  "{{ ec2_info.tagged_instances[0].public_ip }}"
