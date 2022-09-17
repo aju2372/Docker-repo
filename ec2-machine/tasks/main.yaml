@@ -51,6 +51,7 @@
      state: present
      zone: azmatfirdous.ml
      record: test.azmatfirdous.ml
+     private_zone: True
      type: A
      ttl: 60
      value:  "{{ ec2_info.tagged_instances[0].public_ip }}"
