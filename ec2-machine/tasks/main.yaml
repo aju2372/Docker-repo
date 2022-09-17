@@ -43,7 +43,7 @@
     register: ec2_info
 
   - debug:
-      msg: "{{ ec2_info }}"
+      msg: "{{ ec2_info.tagged_instances[0].public_ip }}"
 
 
   - name: Add new zone as an A record and wait until the changes have been replicated
@@ -51,7 +51,6 @@
      state: present
      zone: azmatfirdous.ml
      record: test.azmatfirdous.ml
-     private_zone: True
      type: A
      ttl: 60
      value:  "{{ ec2_info.tagged_instances[0].public_ip }}"
