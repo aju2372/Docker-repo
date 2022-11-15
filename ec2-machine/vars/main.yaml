@@ -1,6 +1,6 @@
 
 region: ap-south-1
-subnet: subnet-0251bbb494b94a242
-vpc: vpc-0328d2317b22b2464
-ami_image: ami-06489866022e12a14
-key_name: my-linux-server
+subnet: subnet-08bc081dc7dfd0fee
+vpc: vpc-025ea4d49e4f9e292
+ami_image: ami-0e6329e222e662a52
+key_name: K8S-Machine-Keypair
